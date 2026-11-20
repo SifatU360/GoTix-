@@ -35,12 +35,13 @@ func main() {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		TranslateError: true,
 	})
-	db.AutoMigrate(&User{})
+
 	if err != nil {
 		panic("failed to connect database")
 	} else {
 		println("Database connected successfully")
 	}
+	db.AutoMigrate(&User{})
 
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
