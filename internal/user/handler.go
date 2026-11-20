@@ -1,34 +1,51 @@
 package user
 
-import "github.com/SifatU360/GoTix-.git/internal/user/dto"
+import (
+	"net/http"
 
-type service struct {
-	repo Repository
+	"github.com/SifatU360/GoTix-.git/internal/httpresponse"
+	"github.com/SifatU360/GoTix-.git/internal/user/dto"
+	"github.com/labstack/echo/v5"
+)
+
+type handler struct {
+	service *service
 }
 
-func NewService(repo Repository) *service {
-	return &service{
-		repo: repo,
+func NewHandler(service *service) *handler {
+	return &handler{
+		service: service,
 	}
 }
 
-func (s *service) CreateUser(req dto.CreateRequest) (*dto.Response,error) {
-	user := User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: req.Password,
+func (h *handler) CreateUser(c *echo.Context) error {
+	var user dto.CreateRequest  // user input
+
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, httpresponse.ErrorResponse{
+			Code: http.StatusBadRequest,
+			Message: "Invalid Request Payload",
+			Details: err.Error(),
+		})
 	}
 
-	err := s.repo.CreateUser(&user)
-	if err != nil {
-		return nil, err
-	}
-	response := dto.Response{
-		ID:		user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt.String(),
+
+	if err := c.Validate(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, httpresponse.ErrorResponse{
+			Code: http.StatusBadRequest,
+			Message: "Validation Failed",
+			Details: err.Error(),
+		})
 	}
 
-	return &response, nil
+	response, err := h.service.CreateUser(user)
+	if err !=nil {
+		return c.JSON(http.StatusInternalServerError, httpresponse.ErrorResponse{
+			Code: http.StatusInternalServerError,
+			Message: "Failed to Create User",
+			Details: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusCreated, response)
 }
