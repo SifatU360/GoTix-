@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/SifatU360/GoTix-.git/internal/user"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -53,26 +54,31 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]string{"message": "Hello, World!"})
 	})
 
-	e.POST("/users", func(c *echo.Context) error {
-		u := new(User)
+	// e.POST("/users", func(c *echo.Context) error {
+	// 	u := new(User)
 
-		// Binding the user data
-		if err := c.Bind(u); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
-		}
+	// 	// Binding the user data
+	// 	if err := c.Bind(u); err != nil {
+	// 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+	// 	}
 
-		// Validating the user data
-		if err := c.Validate(u); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
-		}
+	// 	// Validating the user data
+	// 	if err := c.Validate(u); err != nil {
+	// 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+	// 	}
 
-		// save to database
-		if err := db.Create(u).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
-		}
+	// 	// save to database
+	// 	if err := db.Create(u).Error; err != nil {
+	// 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+	// 	}
 
-		return c.JSON(http.StatusCreated, u)
-	})
+	// 	return c.JSON(http.StatusCreated, u)
+	// })
+
+	userRepository := user.NewRepository(db)
+	userService := user.NewService(userRepository)
+	userHandler := user.NewHandler(userService)
+	e.POST("/users", userHandler.CreateUser)
 
 	if err := e.Start(":5000"); err != nil {
 		e.Logger.Error("failed to start server", "error", err)
