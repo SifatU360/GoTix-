@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/SifatU360/GoTix-.git/internal/config"
 	"github.com/SifatU360/GoTix-.git/internal/user"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
@@ -32,7 +33,9 @@ type User struct {
 
 func main() {
 
-	dsn := "host=localhost user=postgres password=1234 dbname=gotix port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+	config := config.LoadEnv()
+
+	dsn := config.Dsn
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		TranslateError: true,
 	})
@@ -75,10 +78,7 @@ func main() {
 	// 	return c.JSON(http.StatusCreated, u)
 	// })
 
-	userRepository := user.NewRepository(db)
-	userService := user.NewService(userRepository)
-	userHandler := user.NewHandler(userService)
-	e.POST("/users", userHandler.CreateUser)
+	user.RegisterRoutes(e, db)
 
 	if err := e.Start(":5000"); err != nil {
 		e.Logger.Error("failed to start server", "error", err)
