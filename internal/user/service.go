@@ -1,6 +1,10 @@
 package user
 
-import "github.com/SifatU360/GoTix-.git/internal/user/dto"
+import (
+	"errors"
+
+	"github.com/SifatU360/GoTix-.git/internal/user/dto"
+)
 
 type service struct {
 	repo Repository
@@ -31,5 +35,26 @@ func (s *service) CreateUser(req dto.CreateRequest) (*dto.Response,error) {
 		CreatedAt: user.CreatedAt.String(),
 	}
 
+	return &response, nil
+}
+
+
+func (s *service) LoginUser(req dto.LoginRequest) (*dto.Response,error) {
+	user , err := s.repo.GetUserByEmail(req.Email)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+	if !user.checkPassword(req.Password) {
+		return nil, errors.New("invalid password")
+	}
+	response := dto.Response{
+		ID:		user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt.String(),
+	}
 	return &response, nil
 }
