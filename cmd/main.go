@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/SifatU360/GoTix-.git/internal/config"
@@ -8,7 +9,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -33,18 +33,9 @@ type User struct {
 
 func main() {
 
-	config := config.LoadEnv()
+	cfg := config.LoadEnv()
 
-	dsn := config.Dsn
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		TranslateError: true,
-	})
-
-	if err != nil {
-		panic("failed to connect database")
-	} else {
-		println("Database connected successfully")
-	}
+	db := config.ConnectDatabase(cfg)
 	db.AutoMigrate(&User{})
 
 	e := echo.New()
@@ -80,7 +71,8 @@ func main() {
 
 	user.RegisterRoutes(e, db)
 
-	if err := e.Start(":5000"); err != nil {
+	port := fmt.Sprintf(":%s", cfg.Port)
+	if err := e.Start(port); err != nil {
 		e.Logger.Error("failed to start server", "error", err)
 	}
 }
