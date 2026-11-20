@@ -116,3 +116,5 @@ e.POST("/users", func(c *echo.Context) error{
     // return c.XML(http.StatusCreated, u)
 })
 ```
+
+>> Request -> Handler -> Service -> Repository
