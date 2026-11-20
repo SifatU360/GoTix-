@@ -16,3 +16,12 @@
 - Echo
 - PostgreSQL
 - GORM
+
+---
+cmd -> application entry point, config load, database connect, server create, dependancy warren
+
+internal -> private code
+
+
+go mod init <project name / github url>
+go mod tidy
