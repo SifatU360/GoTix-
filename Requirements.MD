@@ -129,4 +129,28 @@ type Config struct {
 	} `envPrefix:"DB_"`
 }
 ```
+
+---
+```
+e.POST("/users", func(c *echo.Context) error {
+		u := new(User)
+
+		// Binding the user data
+		if err := c.Bind(u); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+		}
+
+		// Validating the user data
+		if err := c.Validate(u); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+		}
+
+		// save to database
+		if err := db.Create(u).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": err.Error()})
+		}
+
+		return c.JSON(http.StatusCreated, u)
+	})
+```
 >> Request -> Handler -> Service -> Repository
